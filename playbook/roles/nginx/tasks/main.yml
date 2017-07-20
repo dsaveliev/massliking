@@ -1,0 +1,28 @@
+---
+- name: Install
+  apt: name='{{item}}'
+  with_items:
+    - nginx
+    - nginx-extras
+
+- name: Ensure default from sites-enabled is removed
+  file: path=/etc/nginx/sites-enabled/default state=absent
+
+- name: Ensure default from sites-available is removed
+  file: path=/etc/nginx/sites-available/default state=absent
+
+- name: Copy config
+  template:
+    src: nginx.conf
+    dest: /etc/nginx/sites-enabled/nginx.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Check config
+  command: 'test -f /etc/nginx/sites-enabled/nginx.conf'
+  register: nginx_config_copied
+  ignore_errors: yes
+
+- name: Restart service
+  service: name=nginx state=restarted

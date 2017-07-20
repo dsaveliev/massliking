@@ -1,0 +1,123 @@
+---
+- name: Append repos to known_hosts
+  known_hosts:
+    name: '{{ item }}'
+    key: "{{ lookup('pipe', 'ssh-keyscan {{ item }}, `dig +short {{ item }}`') }}"
+  with_items:
+    - github.com
+    - bitbucket.org
+  become: true
+  become_user: '{{ app_user }}'
+
+- name: Create application folder
+  file:
+    path: '{{ app_path }}'
+    state: directory
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+
+- name: Clone from git repo
+  become: true
+  become_user: '{{ app_user }}'
+  git:
+    repo: '{{ app_repo }}'
+    dest: '{{ app_path }}'
+    version: '{{ app_branch }}'
+    accept_hostkey: yes
+    force: yes
+
+- name: Create targets folders
+  file:
+    path: '{{ app_path }}/{{ item }}'
+    state: directory
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+  with_items:
+    - targets
+    - targets/release
+    - targets/release/config
+    - targets/release/static
+
+- name: Copy frontend settings
+  become: yes
+  become_user: '{{app_user}}'
+  template:
+    src: prod.env.js
+    dest: '{{ app_path }}/frontend/config/prod.env.js'
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0755
+
+- name: Copy backend settings
+  become: yes
+  become_user: '{{app_user}}'
+  template:
+    src: production.yml
+    dest: '{{ app_path }}/targets/release/config/production.yml'
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0755
+
+- name: Install npm modules
+  shell: npm install
+  args:
+    chdir: '{{ app_path }}/frontend'
+  become: yes
+  become_user: '{{ app_user }}'
+
+- name: Compile frontend
+  shell: APP_ENV=production NODE_ENV=production npm run build
+  args:
+    chdir: '{{ app_path }}/frontend'
+  become: yes
+  become_user: '{{ app_user }}'
+
+- name: Install go packages
+  shell: 'go get {{ item }}'
+  with_items:
+    - 'gopkg.in/appleboy/gin-jwt.v2'
+    - 'github.com/gin-gonic/gin'
+    - 'github.com/spf13/viper'
+    - 'github.com/satori/go.uuid'
+    - 'github.com/go-xorm/xorm'
+    - 'github.com/lib/pq'
+    - 'github.com/fvbock/endless'
+    - 'gopkg.in/hlandau/passlib.v1'
+  become: true
+  become_user: '{{ app_user }}'
+
+- name: Compile backend
+  shell: GOARCH=amd64 GOOS=linux APP_ENV=production go build -ldflags '-w -s' -o '{{ app_path }}/targets/release/massliking' *go
+  args:
+    chdir: '{{ app_path }}/backend'
+  become: yes
+  become_user: '{{ app_user }}'
+
+- name: Symlink to release directory
+  file:
+    src: '{{ app_path }}/targets/release'
+    dest: /srv/release
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    state: link
+
+- name: Copy systemd script
+  template:
+    src: massliking.service
+    dest: /etc/systemd/system/
+    owner: root
+    group: root
+
+- name: Start our service
+  systemd:
+    state: started
+    enabled: yes
+    name: massliking
+    daemon_reload: yes
+
+- name: Restart service
+  systemd:
+    state: restarted
+    enabled: yes
+    name: massliking
+    daemon_reload: yes

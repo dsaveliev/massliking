@@ -1,0 +1,12 @@
+---
+- hosts: targets
+  become: yes
+
+  environment:
+    GOPATH: /srv
+
+  vars_files:
+    - vars/default.yml
+
+  roles:
+  - { role: web, tags: ['web']}

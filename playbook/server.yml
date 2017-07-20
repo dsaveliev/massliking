@@ -1,0 +1,17 @@
+---
+- hosts: targets
+  become: yes
+
+  environment:
+    GOPATH: /srv
+
+  vars_files:
+    - vars/default.yml
+
+  roles:
+  - { role: system, tags: ['system'] }
+  - { role: deploy_keys, tags: ['deploy_keys'] }
+  - { role: software, tags: ['software'] }
+  - { role: postgresql, tags: ['postgresql'] }
+  - { role: nginx, tags: ['nginx']}
+  - { role: web, tags: ['web']}

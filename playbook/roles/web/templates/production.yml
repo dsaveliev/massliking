@@ -1,0 +1,23 @@
+log_file: "/srv/log/production.log"
+pid_file: "/srv/pids/service.pid"
+
+db_string: "user=massliking password=massliking host=localhost port=5432 dbname=massliking sslmode=disable"
+
+app_address: "localhost:8080"
+
+jwt:
+  realm: "Release"
+  secret: "thahsheethuo5lejah8geeh2Ook1hahZeugh3iezoxaey1xei1"
+  ttl: 12
+
+limits:
+  trusted:
+    likes:     1000
+    comments:  200
+    follows:   1000
+    unfollows: 1000
+  non_trusted:
+    likes:     500
+    comments:  100
+    follows:   500
+    unfollows: 500

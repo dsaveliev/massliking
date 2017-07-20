@@ -1,0 +1,47 @@
+---
+- name: Create swap
+  shell: fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+  become: yes
+  ignore_errors: yes
+  no_log: yes
+
+- name: Create application user
+  user:
+    name: '{{app_user}}'
+    shell: '/bin/bash'
+
+- name: Create .ssh folder
+  file:
+    path: '/home/{{app_user}}/.ssh'
+    state:  'directory'
+    owner: '{{app_user}}'
+    group: '{{app_user}}'
+    mode: '0700'
+
+- name: Add golang PPA
+  apt_repository:
+    repo: 'ppa:longsleep/golang-backports'
+    state: present
+
+- name: Update apt cache
+  apt: update_cache=yes cache_valid_time=86400
+
+- name: Install en_US locale
+  shell: locale-gen en_US en_US.UTF-8
+  become: yes
+
+- name: Install ru_RU locale
+  shell: locale-gen ru_RU ru_RU.UTF-8
+  become: yes
+
+- name: Create various directories
+  file:
+    path: '/srv/{{ item }}'
+    state: directory
+    owner: '{{app_user}}'
+    group: '{{app_user}}'
+  with_items:
+    - pids
+    - log
+    - src
+    - pkg

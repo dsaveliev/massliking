@@ -1,0 +1,26 @@
+[Unit]
+Description=Massliking
+After=nginx.service
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+PIDFile=/srv/pid/service.pid
+WorkingDirectory=/srv/release
+
+User=root
+Group=root
+
+Environment=APP_ENV=production
+Environment=GOMAXPROCS=2
+
+OOMScoreAdjust=-100
+
+ExecStart=/srv/release/massliking
+ExecStop=/srv/pid/service.pid stop
+ExecReload=/srv/pid/service.pid restart
+TimeoutSec=300
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+frontend/node_modules/
+frontend/dist/
+frontend/npm-debug.log
+frontend/test/unit/coverage
+frontend/test/e2e/reports
+frontend/selenium-debug.log
+config/development.yml
+config/dev.env.js
+targets/
+samples/
+README_DRAFT.md
+playbook_massliking/

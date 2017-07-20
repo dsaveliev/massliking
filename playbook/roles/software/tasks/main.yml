@@ -1,0 +1,12 @@
+---
+- name: Install various software
+  apt: pkg={{ item }} state=installed update_cache=true
+  with_items:
+    - git
+    - vim
+    - tmux
+    - htop
+    - dnsutils
+    - golang-go
+    - npm
+    - nodejs-legacy

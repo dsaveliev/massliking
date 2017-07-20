@@ -1,0 +1,9 @@
+---
+- name: Copy id_rsa
+  copy:
+    src: 'deploy_key'
+    dest: '/home/{{app_user}}/.ssh/id_rsa'
+    mode: 0400
+  become: yes
+  become_user: '{{app_user}}'
+  no_log: true
