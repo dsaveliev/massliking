@@ -27,7 +27,7 @@ func InstagramPoolWorker(client *instabot.Client, i *models.Instagram, pool *mod
 				logInfo("Command stop received")
 				return
 			}
-		case <-time.After(time.Second * ACCOUNT_CHECK_TIME):
+		case <-time.After(time.Second * time.Duration(ACCOUNT_CHECK_TIME)):
 			logInfo("Validate account state")
 			err = i.ValidateState(client)
 			if err != nil {

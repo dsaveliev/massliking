@@ -10,28 +10,27 @@ import (
 	"massliking/backend/models"
 )
 
-func RunAction(i *models.Instagram, c *models.Channel, client *instabot.Client) bool {
+func RunAction(i *models.Instagram, c *models.Channel, client *instabot.Client) error {
 	var err error
 	logInfo, logWarn, logError := logger.TaggedLoggers("workers/actions_collection", "RunAction", i.IdString(), c.IdString())
 
 	logInfo("Checking channel queue size...")
 	if len(c.Queue.Targets) == 0 {
 		logWarn("Channel queue is empty")
-		return false
+		return MODEL_CHANNEL_ACTION_ERROR
 	}
 
 	logInfo("Checking channel schedule...")
 	hour := time.Now().UTC().Hour()
 	if hour < i.Hours.Min || hour > i.Hours.Max {
 		logWarn("Channel out of schedule")
-		return false
+		return MODEL_CHANNEL_ACTION_ERROR
 	}
 
 	logInfo("Checking channel limits...")
 	if !i.CheckLimits(c.Action) {
 		logWarn("Channel limits exceeded")
-		time.Sleep(time.Duration(LIMITS_TIMEOUT) * time.Second)
-		return false
+		return MODEL_CHANNEL_ACTION_ERROR
 	}
 
 	logInfo("Running target action")
@@ -57,14 +56,15 @@ func RunAction(i *models.Instagram, c *models.Channel, client *instabot.Client) 
 		})
 		if err != nil {
 			logError("Skipping current target and move forward", err)
+			return MODEL_CHANNEL_ACTION_ERROR
 		}
-		return false
 	}
 
 	logInfo("Updating channel limits...")
 	err = i.UpdateLimits(c.Action)
 	if err != nil {
 		logError("Updating channel limits...", err)
+		return MODEL_CHANNEL_ACTION_ERROR
 	}
 	logInfo("Updating channel queue...")
 	err = c.Save(func(c *models.Channel) {
@@ -73,11 +73,12 @@ func RunAction(i *models.Instagram, c *models.Channel, client *instabot.Client) 
 	})
 	if err != nil {
 		logError("Updating channel queue...", err)
+		return MODEL_CHANNEL_ACTION_ERROR
 	}
 
 	logInfo(">>> Action completed successfully <<<")
 
-	return true
+	return nil
 }
 
 func RunActionLike(c *models.Channel, client *instabot.Client, pk int) error {
