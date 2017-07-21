@@ -8,5 +8,4 @@ config/development.yml
 config/dev.env.js
 targets/
 samples/
-README_DRAFT.md
 playbook_massliking/
