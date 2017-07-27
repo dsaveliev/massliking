@@ -43,3 +43,4 @@ Check out [these instructions](playbook/README.md) for deployment via [Ansible](
 - Implement signup confirmation via email
 - Cover backend(at least) with tests
 - Rewrite channels worker (fill queues in separate goroutines)
+- Plug in the state machine library to the models
