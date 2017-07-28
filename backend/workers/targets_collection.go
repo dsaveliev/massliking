@@ -70,9 +70,7 @@ func FillQueue(c *models.Channel, client *instabot.Client, followings map[int]bo
 
 	logInfo("Updating channel targets...")
 	err = c.Save(func(c *models.Channel) {
-		for t := range targets {
-			c.Queue.Targets = append(c.Queue.Targets, t)
-		}
+		c.Queue.Targets = append(c.Queue.Targets, targets...)
 	})
 	if err != nil {
 		logError("Updating channel targets...", err)
