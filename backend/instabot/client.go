@@ -90,6 +90,7 @@ func (c *Client) sendRequest(endpoint string, params string) (int, error) {
 	response.Body.Close()
 
 	logInfo("<<< Response: " + response.Status)
+	logInfo("<<< Body: " + string(body))
 
 	if response.StatusCode != http.StatusOK {
 		logWarn("<<< Response: " + string(body))
