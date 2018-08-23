@@ -6,7 +6,6 @@ Written with [Golang](https://golang.org/) and [Quasar](http://quasar-framework.
 
 This is a relatively stable application, but still in alpha.
 
-[Demo site](http://massliking.com)
 ## Core concepts
 Each target account is considered as a separate channel for attracting followers.
 
